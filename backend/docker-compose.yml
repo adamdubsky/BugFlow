@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: bugflow_redis
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: bugflow_postgres
+    environment:
+      POSTGRES_DB: bugflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  celery_worker:
+    build:
+      context: .
+    container_name: bugflow_celery
+    command: poetry run celery -A app.core.celery_app.celery_app worker --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - .:/app
+    working_dir: /app
+
+volumes:
+  pgdata:
