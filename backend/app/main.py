@@ -1,10 +1,14 @@
 from fastapi import FastAPI
-from app.api.routes import router
+from app.api.health import router as health_router
 
-app = FastAPI()
+app = FastAPI(
+    title="BugFlow Backend",
+    version="0.1.0"
+)
 
-app.include_router(router)
+# Include routers
+app.include_router(health_router, prefix="/api")
 
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
+@app.get("/", tags=["Root"])
+async def root():
+    return {"message": "Welcome to BugFlow Backend"}
